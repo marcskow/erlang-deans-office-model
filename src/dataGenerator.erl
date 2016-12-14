@@ -1,0 +1,35 @@
+-module(dataGenerator).
+
+-export([generateStudent/0,toString/1,generate/1]).
+
+-import(obsluga,[student/1]).
+
+generateStudent() ->
+  N = generateInteger(0,4),
+  FieldOfStudy = assignFieldOfStudy(N),
+  Student = spawn(obsluga, student, [FieldOfStudy]),
+  {Student,FieldOfStudy}.
+
+assignFieldOfStudy(0) -> automatyka;
+assignFieldOfStudy(1) -> elektrotechnika;
+assignFieldOfStudy(2) -> informatyka;
+assignFieldOfStudy(3) -> biomedyczna;
+assignFieldOfStudy(4) -> mikroelektronika.
+
+toString(automatyka) -> "Automatyka i Robotyka";
+toString(informatyka) -> "Informatyka";
+toString(biomedyczna) -> "Inzynieria Biomedyczna";
+toString(mikroelektronika) -> "Mikroelektronika";
+toString(elektrotechnika) -> "Elektrotechnika".
+
+generate(0) -> io:fwrite("~n");
+generate(N) ->
+  A = generateInteger(0,4),
+  io:fwrite("~B~n",[A]),
+  generate(N-1).
+
+generateInteger(From, To) ->
+  round((random:uniform() * (To - From) + From)).
+
+getCurrentTime() ->
+  {date(),time()}.
