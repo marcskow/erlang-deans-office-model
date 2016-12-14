@@ -1,48 +1,54 @@
 -module(dziekanat).
 
--import(dataGenerator, [generateStudent/0,toString/1]).
+-import(dataGenerator, [generateFieldOfStudy/0,toString/1]).
 -import(obsluga,[getTicket/5,student/1,secretary/2,screen/5]).
 
 -compile([export_all]).
 %% API
 %-export([]).
 %secretary(FoS, Num) ->
+%secretary(FoS, Scr, Num) ->
 main() ->
   random:seed(erlang:now()),
-  TicketAutomat = spawn(obsluga, getTicket, [1,1,1,1,1]),
-  SecretaryList = [spawn(obsluga, secretary, [elektrotechnika,1]),
-    spawn(obsluga,secretary,[automatyka,1]),
-    spawn(obsluga,secretary,[informatyka,1]),
-    spawn(obsluga,secretary,[biomedyczna,1]),
-    spawn(obsluga,secretary,[mikroelektronika,1])],
-  Screen = spawn(obsluga,screen,[1,1,1,1,1]),
-
-  start(TicketAutomat, SecretaryList, Screen)
+  TicketMachine = spawn(obsluga, getTicket, [1,1,1,1]),
+  Screen = spawn(obsluga,screen,[1,1,1,1]),
+  SecretaryList = [spawn(obsluga, secretary, [elektrotechnika,Screen,1]),
+    spawn(obsluga,secretary,[automatyka,Screen,1]),
+    spawn(obsluga,secretary,[informatyka,Screen,1]),
+    spawn(obsluga,secretary,[biomedyczna,Screen,1])],
+  start(TicketMachine, SecretaryList, Screen)
 .
 
-start(A,SL,S) ->
-  {Pid,FoS} = generateStudent(),
+start(A,SL,Scr) ->
+ % student(FoS,Scr,Sec,T) ->
+  FoS = generateFieldOfStudy(),
+  Sec = getSecretary(FoS,SL),
 
   io:fwrite("Wszedl student kierunku: "),
   io:fwrite(toString(FoS)),
   io:fwrite("~n"),
 
-  A ! {Pid, FoS},
-  timer:sleep(2000),
-  start(A,SL,S).
 
+  Student = spawn(obsluga, student, [FoS, Scr, Sec, -1]),
+  timer:sleep(3000),
+  A ! {Student, FoS}
+% timer:sleep(2000),
+ % start(A,SL,S).
+.
 addToList(L,S,informatyka) ->
-  [E,A,I,IB,M] = L,
-  [E,A,lists:append(I,[S]),IB,M];
+  [E,A,I,IB] = L,
+  [E,A,lists:append(I,[S]),IB];
 addToList(L,S,elektrotechnika) ->
-  [E,A,I,IB,M] = L,
-  [lists:append(E,[S]),A,I,IB,M];
+  [E,A,I,IB] = L,
+  [lists:append(E,[S]),A,I,IB];
 addToList(L,S,automatyka) ->
-  [E,A,I,IB,M] = L,
-  [E,lists:append(A,[S]),I,IB,M];
+  [E,A,I,IB] = L,
+  [E,lists:append(A,[S]),I,IB];
 addToList(L,S,biomedyczna) ->
-  [E,A,I,IB,M] = L,
-  [E,A,I,lists:append(IB,[S]),M];
-addToList(L,S,mikroelektronika) ->
-  [E,A,I,IB,M] = L,
-  [E,A,I,IB,lists:append(M,[S])].
+  [E,A,I,IB] = L,
+  [E,A,I,lists:append(IB,[S])].
+
+getSecretary(informatyka,[_,_,I,_]) -> I;
+getSecretary(elektrotechnika,[E,_,_,_]) -> E;
+getSecretary(biomedyczna,[_,_,_,IB]) -> IB;
+getSecretary(automatyka,[_,A,_,_]) -> A.

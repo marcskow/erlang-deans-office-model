@@ -1,62 +1,68 @@
 -module(obsluga).
 
 %% API
--export([getTicket/5, student/1, secretary/2,screen/5]).
+-export([getTicket/4, student/4, secretary/3,screen/4]).
 
 -import(dataGenerator, [generateStudent/0,toString/1]).
 
 % student ( kierunek
-student(FoS) ->
+student(FoS,Scr,Sec,T) ->
   receive
-    {ticket, T} ->
-      io:fwrite("Dostalem numerek ~B ~n",[T])
+    {ticket, P} ->
+      io:format("Dostalem numerek ~B ~n",[P]),
+      Scr ! {self(), FoS, number},
+      student(FoS,Scr,Sec,P);
+    {number, N} ->
+      if T =/= N -> io:format("Musze poczekac... ~n"), timer:sleep(10000), Scr ! {self(), FoS, T}, student(FoS,Scr,Sec,T);
+         T =:= N -> io:format("Moge wchodzic, dzien dobry ! ~n"), Sec ! {self(), FoS, T}, student(FoS,Scr,Sec,T)
+      end;
+    terminate -> ok
   end.
 
-screen(E,A,I,IB,M) ->
+screen(E,A,I,IB) ->
   receive
-    {From, elektrotechnika, number} -> From ! E;
-    {From, automatyka, number} -> From ! A;
-    {From, informatyka, number} -> From ! I;
-    {From, biomedyczna, number} -> From ! IB;
-    {From, mikroelektronika, number} -> From ! M;
-    {elektrotechnika, N} -> screen(N,A,I,IB,M);
-    {automatyka, N} -> screen(E,N,I,IB,M);
-    {informatyka,N} -> screen(E,A,N,IB,M);
-    {biomedyczna,N} -> screen(E,A,I,N,M);
-    {mikroelektronika,N} -> screen(E,A,I,IB,M)
+    {From, elektrotechnika, number} -> io:format("Wyswietlam numerek... ~n"), timer:sleep(3000), From ! {number, E}, screen(E,A,I,IB);
+    {From, automatyka, number} -> io:format("Wyswietlam numerek... ~n"),   timer:sleep(3000), From ! {number, A}, screen(E,A,I,IB);
+    {From, informatyka, number} -> io:format("Wyswietlam numerek... ~n"),   timer:sleep(3000), From ! {number, I}, screen(E,A,I,IB);
+    {From, biomedyczna, number} -> io:format("Wyswietlam numerek... ~n"),   timer:sleep(3000), From ! {number, IB}, screen(E,A,I,IB);
+    {elektrotechnika, N} -> screen(N,A,I,IB);
+    {automatyka, N} -> screen(E,N,I,IB);
+    {informatyka,N} -> screen(E,A,N,IB);
+    {biomedyczna,N} -> screen(E,A,I,N)
   end.
 
 % automat do bilecikow ( liczniki ele aut inf inzbio mikro
-getTicket(E,A,I,IB,M) ->
+getTicket(E,A,I,IB) ->
   receive
     {From, elektrotechnika} ->
       From ! {ticket, E},
-      getTicket(E+1,A,I,IB,M);
+      getTicket(E+1,A,I,IB);
     {From, automatyka} ->
       From ! {ticket, A},
-      getTicket(E,A+1,I,IB,M);
+      getTicket(E,A+1,I,IB);
     {From, informatyka} ->
       From ! {ticket, I},
-      getTicket(E,A,I+1,IB,M);
+      getTicket(E,A,I+1,IB);
     {From, biomedyczna} ->
       From ! {ticket, IB},
-      getTicket(E,A,I,IB+1,M);
-    {From, mikroelektronika} ->
-      From ! {ticket, M},
-      getTicket(E,A,I,IB,M+1);
+      getTicket(E,A,I,IB+1);
     terminate -> ok;
     _ -> not_found
   end.
 
 % secretary ( kierunek ktory obsluguje, numerek do nastepnej obslugi
-secretary(FoS, Num) ->
+secretary(FoS, Scr, Num) ->
   receive
     {From, SFoS, SNum} ->
-      if SNum =/= Num -> From ! {not_ok,"Poczekaj na swoją kolej!"};
+      if SNum =/= Num -> From ! {not_ok,"Poczekaj na swoją kolej! ~n"};
          SNum =:= Num ->
-           io:fwrite(toString(SFoS)),
-           io:fwrite(". Rozpoczynam obslugiwac studenta ~B ~n",[Num]),
+           io:format("Pani z dziekanatu "),
+           io:format(toString(SFoS)),
+           io:format(". Rozpoczynam obslugiwac studenta ~B ~n",[Num]),
            timer:sleep(10000),
-           From ! {ok}
+           io:format("Dobrze, to wszystko moze pan odejsc. ~n"),
+           From ! {terminate},
+           Scr ! {FoS, Num + 1},
+           secretary(FoS,Scr,Num + 1)
       end
   end.

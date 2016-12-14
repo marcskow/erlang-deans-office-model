@@ -1,25 +1,22 @@
 -module(dataGenerator).
 
--export([generateStudent/0,toString/1,generate/1]).
+-export([generateFieldOfStudy/0,toString/1,generate/1]).
 
 -import(obsluga,[student/1]).
 
-generateStudent() ->
-  N = generateInteger(0,4),
+generateFieldOfStudy() ->
+  N = generateInteger(0,3),
   FieldOfStudy = assignFieldOfStudy(N),
-  Student = spawn(obsluga, student, [FieldOfStudy]),
-  {Student,FieldOfStudy}.
+  FieldOfStudy.
 
 assignFieldOfStudy(0) -> automatyka;
 assignFieldOfStudy(1) -> elektrotechnika;
 assignFieldOfStudy(2) -> informatyka;
-assignFieldOfStudy(3) -> biomedyczna;
-assignFieldOfStudy(4) -> mikroelektronika.
+assignFieldOfStudy(3) -> biomedyczna.
 
 toString(automatyka) -> "Automatyka i Robotyka";
 toString(informatyka) -> "Informatyka";
 toString(biomedyczna) -> "Inzynieria Biomedyczna";
-toString(mikroelektronika) -> "Mikroelektronika";
 toString(elektrotechnika) -> "Elektrotechnika".
 
 generate(0) -> io:fwrite("~n");
