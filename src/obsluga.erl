@@ -13,7 +13,7 @@ student(FoS,Scr,Sec,T) ->
       Scr ! {self(), FoS, number},
       student(FoS,Scr,Sec,P);
     {number, N} ->
-      if T =/= N -> io:format("Musze poczekac... ~n"), timer:sleep(10000), Scr ! {self(), FoS, T}, student(FoS,Scr,Sec,T);
+      if T =/= N -> io:format("Musze poczekac... ~n"), timer:sleep(10000), Scr ! {self(), FoS, number}, student(FoS,Scr,Sec,T);
          T =:= N -> io:format("Moge wchodzic, dzien dobry ! ~n"), Sec ! {self(), FoS, T}, student(FoS,Scr,Sec,T)
       end;
     terminate -> ok
@@ -21,10 +21,10 @@ student(FoS,Scr,Sec,T) ->
 
 screen(E,A,I,IB) ->
   receive
-    {From, elektrotechnika, number} -> io:format("Wyswietlam numerek... ~n"), timer:sleep(3000), From ! {number, E}, screen(E,A,I,IB);
-    {From, automatyka, number} -> io:format("Wyswietlam numerek... ~n"),   timer:sleep(3000), From ! {number, A}, screen(E,A,I,IB);
-    {From, informatyka, number} -> io:format("Wyswietlam numerek... ~n"),   timer:sleep(3000), From ! {number, I}, screen(E,A,I,IB);
-    {From, biomedyczna, number} -> io:format("Wyswietlam numerek... ~n"),   timer:sleep(3000), From ! {number, IB}, screen(E,A,I,IB);
+    {From, elektrotechnika, number} -> From ! {number, E}, screen(E,A,I,IB);
+    {From, automatyka, number} -> From ! {number, A}, screen(E,A,I,IB);
+    {From, informatyka, number} -> From ! {number, I}, screen(E,A,I,IB);
+    {From, biomedyczna, number} -> From ! {number, IB}, screen(E,A,I,IB);
     {elektrotechnika, N} -> screen(N,A,I,IB);
     {automatyka, N} -> screen(E,N,I,IB);
     {informatyka,N} -> screen(E,A,N,IB);
@@ -56,11 +56,9 @@ secretary(FoS, Scr, Num) ->
     {From, SFoS, SNum} ->
       if SNum =/= Num -> From ! {not_ok,"Poczekaj na swoją kolej! ~n"};
          SNum =:= Num ->
-           io:format("Pani z dziekanatu "),
-           io:format(toString(SFoS)),
-           io:format(". Rozpoczynam obslugiwac studenta ~B ~n",[Num]),
+           io:format(lists:concat(["Pani z dziekanatu ", toString(SFoS), ". Rozpoczynam obslugiwac studenta nr ~B. ~n"]),[SNum]),
            timer:sleep(10000),
-           io:format("Dobrze, to wszystko moze pan odejsc. ~n"),
+           io:format(lists:concat(["Do studenta nr ~B z: ", toString(SFoS)," - Dobrze, to wszystko moze pan odejsc. ~n"]),[SNum]),
            From ! {terminate},
            Scr ! {FoS, Num + 1},
            secretary(FoS,Scr,Num + 1)

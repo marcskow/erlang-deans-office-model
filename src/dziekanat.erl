@@ -8,7 +8,7 @@
 %-export([]).
 %secretary(FoS, Num) ->
 %secretary(FoS, Scr, Num) ->
-main() ->
+main(NW) ->
   random:seed(erlang:now()),
   TicketMachine = spawn(obsluga, getTicket, [1,1,1,1]),
   Screen = spawn(obsluga,screen,[1,1,1,1]),
@@ -16,10 +16,12 @@ main() ->
     spawn(obsluga,secretary,[automatyka,Screen,1]),
     spawn(obsluga,secretary,[informatyka,Screen,1]),
     spawn(obsluga,secretary,[biomedyczna,Screen,1])],
-  start(TicketMachine, SecretaryList, Screen)
+  start(TicketMachine, SecretaryList, Screen,NW)
 .
 
-start(A,SL,Scr) ->
+start(_,_,_,0) -> io:fwrite("");
+
+start(A,SL,Scr,NW) ->
  % student(FoS,Scr,Sec,T) ->
   FoS = generateFieldOfStudy(),
   Sec = getSecretary(FoS,SL),
@@ -31,9 +33,9 @@ start(A,SL,Scr) ->
 
   Student = spawn(obsluga, student, [FoS, Scr, Sec, -1]),
   timer:sleep(3000),
-  A ! {Student, FoS}
-% timer:sleep(2000),
- % start(A,SL,S).
+  A ! {Student, FoS},
+  timer:sleep(2000),
+  start(A,SL,Scr,NW-1)
 .
 addToList(L,S,informatyka) ->
   [E,A,I,IB] = L,
