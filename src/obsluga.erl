@@ -5,7 +5,18 @@
 
 -import(dataGenerator, [generateStudent/0,toString/1]).
 
-% student ( kierunek
+waitIntoQueue() -> timer:sleep(10000).
+handleStudent() -> timer:sleep(10000).
+
+printHandleStudentMessage(FoS, Num) -> io:format(lists:concat(
+  ["Pani z dziekanatu ", toString(FoS), ". Rozpoczynam obslugiwac studenta nr ~B. ~n"]
+),[Num]).
+printGoodByMessage(SFoS,SNum) -> io:format(lists:concat(
+  ["Do studenta nr ~B z: ", toString(SFoS)," - Dobrze, to wszystko moze pan odejsc. ~n"]
+),[SNum]).
+printResponse(Response,Message) -> io:format(lists:concat([Response,Message])).
+
+
 student(FoS,Scr,Sec,T) ->
   receive
     {ticket, P} ->
@@ -13,9 +24,14 @@ student(FoS,Scr,Sec,T) ->
       Scr ! {self(), FoS, number},
       student(FoS,Scr,Sec,P);
     {number, N} ->
-      if T =/= N -> io:format("Musze poczekac... ~n"), timer:sleep(10000), Scr ! {self(), FoS, number}, student(FoS,Scr,Sec,T);
+      if T =/= N -> io:format("Musze poczekac... ~n"), waitIntoQueue(), Scr ! {self(), FoS, number}, student(FoS,Scr,Sec,T);
          T =:= N -> io:format("Moge wchodzic, dzien dobry ! ~n"), Sec ! {self(), FoS, T}, student(FoS,Scr,Sec,T)
       end;
+    {not_ok, Response} ->
+      printResponse(Response,". Musze jeszcze poczekac... ~n"),
+      waitIntoQueue(),
+      Sec ! {self(), FoS, T},
+      student(FoS,Scr,Sec,T);
     terminate -> ok
   end.
 
@@ -31,7 +47,6 @@ screen(E,A,I,IB) ->
     {biomedyczna,N} -> screen(E,A,I,N)
   end.
 
-% automat do bilecikow ( liczniki ele aut inf inzbio mikro
 getTicket(E,A,I,IB) ->
   receive
     {From, elektrotechnika} ->
@@ -50,15 +65,15 @@ getTicket(E,A,I,IB) ->
     _ -> not_found
   end.
 
-% secretary ( kierunek ktory obsluguje, numerek do nastepnej obslugi
+
 secretary(FoS, Scr, Num) ->
   receive
     {From, SFoS, SNum} ->
       if SNum =/= Num -> From ! {not_ok,"Poczekaj na swoją kolej! ~n"};
          SNum =:= Num ->
-           io:format(lists:concat(["Pani z dziekanatu ", toString(SFoS), ". Rozpoczynam obslugiwac studenta nr ~B. ~n"]),[SNum]),
-           timer:sleep(10000),
-           io:format(lists:concat(["Do studenta nr ~B z: ", toString(SFoS)," - Dobrze, to wszystko moze pan odejsc. ~n"]),[SNum]),
+           printHandleStudentMessage(SFoS,SNum),
+           handleStudent(),
+           printGoodByMessage(SFoS,SNum),
            From ! {terminate},
            Scr ! {FoS, Num + 1},
            secretary(FoS,Scr,Num + 1)
