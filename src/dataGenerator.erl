@@ -5,7 +5,8 @@
 -import(obsluga,[student/1]).
 
 generateFieldOfStudy() ->
-  N = generateInteger(0,3),
+ % N = generateInteger(0,3),
+  N=1,
   FieldOfStudy = assignFieldOfStudy(N),
   FieldOfStudy.
 

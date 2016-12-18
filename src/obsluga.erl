@@ -14,7 +14,7 @@ student(FoS,Scr,Sec,T) ->
       student(FoS,Scr,Sec,P);
     {number, N} ->
       if T =/= N -> io:format("Musze poczekac... ~n"), timer:sleep(10000), Scr ! {self(), FoS, number}, student(FoS,Scr,Sec,T);
-         T =:= N -> io:format("Moge wchodzic, dzien dobry ! ~n"), Sec ! {self(), FoS, T}, student(FoS,Scr,Sec,T)
+         T =:= N -> io:format("Moge wchodzic, dzien dobry (Student numer ~p kierunek ~p)! ~n",[T,FoS]), Sec ! {self(), FoS, T}, student(FoS,Scr,Sec,T)
       end;
     terminate -> ok
   end.
