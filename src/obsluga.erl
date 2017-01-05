@@ -5,8 +5,8 @@
 
 -import(dataGenerator, [generateStudent/0,toString/1]).
 
-waitIntoQueue() -> timer:sleep(10000).
-handleStudent() -> timer:sleep(10000).
+waitIntoQueue() -> timer:sleep(10 * constants:timeUnit()).
+handleStudent() -> timer:sleep(10 * constants:timeUnit()).
 
 printHandleStudentMessage(FoS, Num) -> io:format(lists:concat(
   ["Pani z dziekanatu ", toString(FoS), ". Rozpoczynam obslugiwac studenta nr ~B. ~n"]

@@ -1,6 +1,6 @@
 -module(dataGenerator).
 
--export([generateFieldOfStudy/0,toString/1,generate/1]).
+-export([generateFieldOfStudy/0,toString/1,generate/1, generateInteger/2]).
 
 -import(obsluga,[student/1]).
 
