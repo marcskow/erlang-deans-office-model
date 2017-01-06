@@ -93,7 +93,9 @@ secretary(FieldOfStudy, Screen, Clock, NumberToHandle) ->
   receive
     {From, StudentFieldOfStudy, StudentNumber} ->
       if StudentFieldOfStudy =/= FieldOfStudy ->
-        io:format("Nie wiesz z jakiego jestes kierunku!? ~n"), From ! not_your_secretary;
+        io:format("Nie wiesz z jakiego jestes kierunku!? ~n"),
+        From ! not_your_secretary,
+        secretary(FieldOfStudy,Screen, Clock, NumberToHandle);
         StudentFieldOfStudy =:= FieldOfStudy ->
           if StudentNumber =/= NumberToHandle -> From ! {wait_for_your_turn,"Poczekaj na swoją kolej! ~n"};
            StudentNumber =:= NumberToHandle ->
