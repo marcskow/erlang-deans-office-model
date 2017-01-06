@@ -17,7 +17,8 @@ customTimerThread({DIW,S,M,H,D,Mo,Y}) ->
       show(S,NM,M,H,D,Mo,Y),
       % io:format("~B:~B:~B ~B-~B-~B ~n",[H,M,S,D,Mo,Y]),
       customTimerThread({NDIW, NS, countMinute(NM), countHour(NH), countDay(ND), countMonth(NMo), NY});
-    {From, get_time} -> From ! {DIW,S,M,H,D,Mo,Y}, customTimerThread({DIW,S,M,H,D,Mo,Y})
+    {From, get_time} -> From ! {DIW,S,M,H,D,Mo,Y}, customTimerThread({DIW,S,M,H,D,Mo,Y});
+    {From, X, get_time} -> From ! {X,DIW,S,M,H,D,Mo,Y}, customTimerThread({DIW,S,M,H,D,Mo,Y})
 end.
 
 customTimer({DayInWeek,Second,Minute,Hour,Day,Month,Year}) ->

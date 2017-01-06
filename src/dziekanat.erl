@@ -1,7 +1,7 @@
 -module(dziekanat).
 
 -import(dataGenerator, [generateFieldOfStudy/0,toString/1,generateInteger/2]).
--import(obsluga,[getTicket/5,student/1,secretary/2,screen/5]).
+-import(obsluga,[getTicket/5,student/1,secretary/2,screen/5,dean/2]).
 -import(constants,[timeUnit/0]).
 -import(customTimer,[customTimer/1]).
 
@@ -18,40 +18,41 @@ main(NumberOfTimeUnits) ->
   Clock = spawn(customTimer, customTimerThread,[{poniedzialek,0,0,15,5,1,2016}]),
   TicketMachine = spawn(obsluga, getTicket, [1,1,1,1]),
   Screen = spawn(obsluga,screen,[1,1,1,1]),
+  Dean = spawn(obsluga,dean,[Screen,Clock]),
   SecretaryList = [spawn(obsluga, secretary, [elektrotechnika,Screen,Clock,1]),
     spawn(obsluga,secretary,[automatyka,Screen,Clock,1]),
     spawn(obsluga,secretary,[informatyka,Screen,Clock,1]),
     spawn(obsluga,secretary,[biomedyczna,Screen,Clock,1])],
-  start(TicketMachine, SecretaryList, Screen, NumberOfTimeUnits, Clock)
+  start(TicketMachine, SecretaryList, Dean, Screen, NumberOfTimeUnits, Clock)
 .
 
-start(_,_,_,0,_) -> io:fwrite("");
+start(_,_,_,_,0,_) -> io:fwrite("");
 
-start(TicketMachine, SecretaryList, Screen, NumberOfTimeUnits, Clock) ->
-  Spawner = spawn(dziekanat,helperSpawner,[SecretaryList, Screen, TicketMachine, Clock]),
+start(TicketMachine, SecretaryList, Dean, Screen, NumberOfTimeUnits, Clock) ->
+  Spawner = spawn(dziekanat,helperSpawner,[SecretaryList, Screen, Dean, TicketMachine, Clock]),
   Spawner ! spawn,
 
   timer:sleep(constants:timeUnit()),
   Clock ! go,
-  start(TicketMachine, SecretaryList, Screen, NumberOfTimeUnits-1, Clock)
+  start(TicketMachine, SecretaryList, Dean, Screen, NumberOfTimeUnits-1, Clock)
 .
 
-helperSpawner(SecretaryList, Screen, TicketMachine, Clock) ->
+helperSpawner(SecretaryList, Screen, Dean, TicketMachine, Clock) ->
   receive
     spawn ->
-      Helper = spawn(dziekanat, multiStudentsSpawner, [SecretaryList, Screen, TicketMachine, Clock]),
+      Helper = spawn(dziekanat, multiStudentsSpawner, [SecretaryList, Screen, Dean, TicketMachine, Clock]),
       Clock ! {Helper, get_time}
   end.
 
 takie(DayInWeek,Day,Month,Hour,Month) -> studentPerTimeUnit() * week_day_factor(DayInWeek) * special_day_factor(Day,Month) * hour_factor(Hour) * month_factor(Month).
 
-multiStudentsSpawner(SecretaryList, Screen, TicketMachine, Clock) ->
+multiStudentsSpawner(SecretaryList, Screen, Dean, TicketMachine, Clock) ->
   receive
     {DayInWeek,_,_,Hour,Day,Month,_} ->
       N = studentPerTimeUnit() * week_day_factor(DayInWeek) * special_day_factor(Day,Month) * hour_factor(Hour) * month_factor(Month),
       NN = getN(N),
      % io:fwrite("~B",[NN]),
-      spawnSpawners(NN,SecretaryList, Screen, TicketMachine, Clock)
+      spawnSpawners(NN,SecretaryList, Screen, Dean, TicketMachine, Clock)
   end.
 % dziekanat:main(100000).
 getN(0.0) -> 0;
@@ -64,26 +65,33 @@ getN(N) when N < 1 ->
   end
 .
 
-spawnSpawner(SecretaryList, Screen, TicketMachine, Clock) ->
-  Spawner = spawn(dziekanat, singleStudentSpawner, [SecretaryList, Screen, TicketMachine, Clock]),
+spawnSpawner(SecretaryList, Screen, Dean, TicketMachine, Clock) ->
+  Spawner = spawn(dziekanat, singleStudentSpawner, [SecretaryList, Screen, Dean, TicketMachine, Clock]),
   Spawner ! spawn.
-spawnSpawners(0,_,_,_,_) -> void;
-spawnSpawners(N, SecretaryList, Screen, TicketMachine, Clock) ->
-  spawnSpawner(SecretaryList, Screen, TicketMachine, Clock),
-  spawnSpawners(N-1, SecretaryList, Screen, TicketMachine, Clock).
+spawnSpawners(0,_,_,_,_,_) -> void;
+spawnSpawners(N, SecretaryList, Screen, Dean, TicketMachine, Clock) ->
+  spawnSpawner(SecretaryList, Screen, Dean, TicketMachine, Clock),
+  spawnSpawners(N-1, SecretaryList, Screen, Dean, TicketMachine, Clock).
 
-singleStudentSpawner(SecretaryList, Screen, TicketMachine, Clock) ->
+singleStudentSpawner(SecretaryList, Screen, Dean, TicketMachine, Clock) ->
   receive
     spawn ->
       %timer:sleep(randomizeTimeout()),
       FieldOfStudy = generateFieldOfStudy(),
       io:format(lists:concat(["Wszedl student kierunku: ", toString(FieldOfStudy), ". ~n"])),
       Issue = generateIssue(),
-      Student = spawn(obsluga, student, [FieldOfStudy, Issue, Screen, SecretaryList, TicketMachine, Clock, -1]),
+      Student = spawn(obsluga, student, [FieldOfStudy, Issue, Screen, SecretaryList, Dean, TicketMachine, Clock, -1]),
       Student ! go
   end.
 
-generateIssue() -> general.
+generateIssue() -> randomizeIssue(generateInteger(0,8)).
+randomizeIssue(X) when X >= 0, X < 4 -> general;
+randomizeIssue(4) -> certificate;
+randomizeIssue(5) -> certificate;
+randomizeIssue(6) -> degree;
+randomizeIssue(7) -> petition;
+randomizeIssue(8) -> general.
+
 
 randomizeTimeout() ->
   round(timeUnit() / generateInteger(1,10)).
