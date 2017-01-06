@@ -1,12 +1,14 @@
 -module(obsluga).
 
 %% API
--export([getTicket/4, student/4, secretary/3,screen/4]).
+-export([getTicket/4, student/7, secretary/4,screen/4,getStudentSecretary/2]).
 
--import(dataGenerator, [generateStudent/0,toString/1]).
+-import(dataGenerator, [generateStudent/0,toString/1,generateInteger/2,generateFieldOfStudy/0]).
+-import(dziekanat,[getSecretary/2]).
 
 waitIntoQueue() -> timer:sleep(10 * constants:timeUnit()).
 handleStudent() -> timer:sleep(10 * constants:timeUnit()).
+thinkABit() -> timer:sleep(constants:timeUnit()).
 
 printHandleStudentMessage(FoS, Num) -> io:format(lists:concat(
   ["Pani z dziekanatu ", toString(FoS), ". Rozpoczynam obslugiwac studenta nr ~B. ~n"]
@@ -17,23 +19,44 @@ printGoodByMessage(SFoS,SNum) -> io:format(lists:concat(
 printResponse(Response,Message) -> io:format(lists:concat([Response,Message])).
 
 
-student(FoS,Scr,Sec,T) ->
+student(FieldOfStudy,Issue,Screen,SecretaryList,TicketMachine,Clock,Ticket) ->
   receive
+    go -> TicketMachine ! {self(), FieldOfStudy},
+      student(FieldOfStudy,Issue,Screen,SecretaryList,TicketMachine,Clock,Ticket);
     {ticket, P} ->
       io:format("Dostalem numerek ~B ~n",[P]),
-      Scr ! {self(), FoS, number},
-      student(FoS,Scr,Sec,P);
+      Screen ! {self(), FieldOfStudy, number},
+      student(FieldOfStudy,Issue,Screen,SecretaryList,TicketMachine,Clock,P);
     {number, N} ->
-      if T =/= N -> io:format("Musze poczekac... ~n"), waitIntoQueue(), Scr ! {self(), FoS, number}, student(FoS,Scr,Sec,T);
-         T =:= N -> io:format("Moge wchodzic, dzien dobry ! ~n"), Sec ! {self(), FoS, T}, student(FoS,Scr,Sec,T)
+      if Ticket =/= N ->
+        io:format("Musze poczekac... ~B ~B ~n", [Ticket, N]),
+        waitIntoQueue(),
+        Screen ! {self(), FieldOfStudy, number},
+        student(FieldOfStudy,Issue,Screen,SecretaryList,TicketMachine,Clock,Ticket);
+        Ticket =:= N ->
+          io:format("Moge wchodzic, dzien dobry ! ~n"),
+          Secretary = getStudentSecretary(SecretaryList,FieldOfStudy),
+          Secretary ! {self(), FieldOfStudy, Ticket}, student(FieldOfStudy,Issue,Screen,SecretaryList,TicketMachine,Clock,Ticket)
       end;
-    {not_ok, Response} ->
+    {wait_for_your_turn, Response} ->
       printResponse(Response,". Musze jeszcze poczekac... ~n"),
       waitIntoQueue(),
-      Sec ! {self(), FoS, T},
-      student(FoS,Scr,Sec,T);
-    terminate -> ok
+      Secretary = getStudentSecretary(SecretaryList,FieldOfStudy),
+      Secretary ! {self(), FieldOfStudy, Ticket},
+      student(FieldOfStudy,Issue,Screen,SecretaryList,TicketMachine,Clock,Ticket);
+    not_your_secretary ->
+      io:format("Musze jeszcze raz pomyslec czy poszedlem do odpowiedniej osoby... ~n"),
+      thinkABit(),
+      Secretary = getStudentSecretary(SecretaryList,FieldOfStudy),
+      Secretary ! {self(), FieldOfStudy, Ticket}, student(FieldOfStudy,Issue,Screen,SecretaryList,TicketMachine,Clock,Ticket);
+      terminate -> ok
   end.
+
+getStudentSecretary(SecretaryList,FieldOfStudy) ->
+  getSecretary(studentTryToRecognizeHisSecretary(generateInteger(5,7),FieldOfStudy),SecretaryList).
+
+studentTryToRecognizeHisSecretary(6,_) -> generateFieldOfStudy();
+studentTryToRecognizeHisSecretary(_,FieldOfStudy) -> FieldOfStudy.
 
 screen(E,A,I,IB) ->
   receive
@@ -66,16 +89,20 @@ getTicket(E,A,I,IB) ->
   end.
 
 
-secretary(FoS, Scr, Num) ->
+secretary(FieldOfStudy, Screen, Clock, NumberToHandle) ->
   receive
-    {From, SFoS, SNum} ->
-      if SNum =/= Num -> From ! {not_ok,"Poczekaj na swoją kolej! ~n"};
-         SNum =:= Num ->
-           printHandleStudentMessage(SFoS,SNum),
+    {From, StudentFieldOfStudy, StudentNumber} ->
+      if StudentFieldOfStudy =/= FieldOfStudy ->
+        io:format("Nie wiesz z jakiego jestes kierunku!? ~n"), From ! not_your_secretary;
+        StudentFieldOfStudy =:= FieldOfStudy ->
+          if StudentNumber =/= NumberToHandle -> From ! {wait_for_your_turn,"Poczekaj na swoją kolej! ~n"};
+           StudentNumber =:= NumberToHandle ->
+           printHandleStudentMessage(StudentFieldOfStudy,StudentNumber),
            handleStudent(),
-           printGoodByMessage(SFoS,SNum),
+           printGoodByMessage(StudentFieldOfStudy,StudentNumber),
            From ! {terminate},
-           Scr ! {FoS, Num + 1},
-           secretary(FoS,Scr,Num + 1)
+           Screen ! {FieldOfStudy, NumberToHandle + 1},
+           secretary(FieldOfStudy,Screen, Clock, NumberToHandle + 1)
+         end
       end
   end.

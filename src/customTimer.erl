@@ -4,7 +4,7 @@
 
 -import(constants, [timeUnit/0]).
 
-customTimerThread(DIW,S,M,H,D,Mo,Y) ->
+customTimerThread({DIW,S,M,H,D,Mo,Y}) ->
   receive
     go ->
       NS = countSecond(S+1),
@@ -14,8 +14,10 @@ customTimerThread(DIW,S,M,H,D,Mo,Y) ->
       NDIW = countDayInWeek(D,ND,DIW),
       NMo = countMonth(Mo,ND),
       NY = countYear(Y,NMo),
-      customTimerThread(NDIW, NS, countMinute(NM), countHour(NH), countDay(ND), countMonth(NMo), NY);
-    {From, get_time} -> From ! {DIW,S,M,H,D,Mo,Y}, customTimerThread(DIW,S,M,H,D,Mo,Y)
+      show(S,NM,M,H,D,Mo,Y),
+      % io:format("~B:~B:~B ~B-~B-~B ~n",[H,M,S,D,Mo,Y]),
+      customTimerThread({NDIW, NS, countMinute(NM), countHour(NH), countDay(ND), countMonth(NMo), NY});
+    {From, get_time} -> From ! {DIW,S,M,H,D,Mo,Y}, customTimerThread({DIW,S,M,H,D,Mo,Y})
 end.
 
 customTimer({DayInWeek,Second,Minute,Hour,Day,Month,Year}) ->
@@ -35,7 +37,7 @@ customTimer2(DIW,S,M,H,D,Mo,Y) ->
   NS = countSecond(S+1),
   io:format(":) ~n"),
   NM = countMinute(M,S+1),
-  show(M,NM,H,D,Mo,Y),
+  show(S,M,NM,H,D,Mo,Y),
   io:format("2 :) ~n"),
   NH = countHour(H,NM),
   io:format("3 :) ~n"),
@@ -47,7 +49,7 @@ customTimer2(DIW,S,M,H,D,Mo,Y) ->
   io:format("6 :) ~n"),
   NY = countYear(Y,NMo),
   io:format("7 :) ~n"),
-  customTimer(
+  customTimer2(
     NDIW,
     NS,
     countMinute(NM),
@@ -56,8 +58,8 @@ customTimer2(DIW,S,M,H,D,Mo,Y) ->
     countMonth(NMo),
     NY)
 .
-show(M,M,_,_,_,_) -> 1;
-show(M,_,H,D,Mo,Y) -> io:format("~B ~B ~B ~B ~B ~n",[M,H,D,Mo,Y]).
+show(_,M,M,_,_,_,_) -> void;
+show(S,M,_,H,D,Mo,Y) -> io:format("~B:~B:~B ~B-~B-~B ~n",[H,M,S,D,Mo,Y]).
 
 nextDay(poniedzialek) -> wtorek;
 nextDay(wtorek) -> sroda;

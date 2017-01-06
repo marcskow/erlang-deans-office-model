@@ -26,7 +26,7 @@ generate(N) ->
   generate(N-1).
 
 generateInteger(From, To) ->
-  round((random:uniform() * (To - From) + From)).
+  round((rand:uniform() * (To - From) + From)).
 
 getCurrentTime() ->
   {date(),time()}.

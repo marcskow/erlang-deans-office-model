@@ -7,7 +7,7 @@
 
 -compile([export_all]).
 
-studentPerTimeUnit() -> 6.
+studentPerTimeUnit() -> 0.1.
 
 %% API
 %-export([]).
@@ -15,63 +15,78 @@ studentPerTimeUnit() -> 6.
 %secretary(FoS, Scr, Num) ->
 main(NumberOfTimeUnits) ->
   random:seed(erlang:now()),
-  Clock = spawn(customTimer, customTimer,[poniedzialek,0,0,6,1,1,2016]),
+  Clock = spawn(customTimer, customTimerThread,[{poniedzialek,0,0,15,5,1,2016}]),
   TicketMachine = spawn(obsluga, getTicket, [1,1,1,1]),
   Screen = spawn(obsluga,screen,[1,1,1,1]),
-  SecretaryList = [spawn(obsluga, secretary, [elektrotechnika,Screen,1]),
-    spawn(obsluga,secretary,[automatyka,Screen,1]),
-    spawn(obsluga,secretary,[informatyka,Screen,1]),
-    spawn(obsluga,secretary,[biomedyczna,Screen,1])],
+  SecretaryList = [spawn(obsluga, secretary, [elektrotechnika,Screen,Clock,1]),
+    spawn(obsluga,secretary,[automatyka,Screen,Clock,1]),
+    spawn(obsluga,secretary,[informatyka,Screen,Clock,1]),
+    spawn(obsluga,secretary,[biomedyczna,Screen,Clock,1])],
   start(TicketMachine, SecretaryList, Screen, NumberOfTimeUnits, Clock)
 .
 
 start(_,_,_,0,_) -> io:fwrite("");
 
 start(TicketMachine, SecretaryList, Screen, NumberOfTimeUnits, Clock) ->
- % student(FoS,Scr,Sec,T) ->
+  Spawner = spawn(dziekanat,helperSpawner,[SecretaryList, Screen, TicketMachine, Clock]),
+  Spawner ! spawn,
 
-  FoS = generateFieldOfStudy(),
-  Sec = getSecretary(FoS,SecretaryList),
-
-  io:fwrite("Wszedl student kierunku: "),
-  io:fwrite(toString(FoS)),
-  io:fwrite("~n"),
-
-
-  Student = spawn(obsluga, student, [FoS, Screen, Sec, -1]),
-  timer:sleep(3 * constants:timeUnit()),
-  TicketMachine ! {Student, FoS},
-
-  timer:sleep(2 * constants:timeUnit()),
-
-%  NewTime = customTimer(Time),
+  timer:sleep(constants:timeUnit()),
   Clock ! go,
   start(TicketMachine, SecretaryList, Screen, NumberOfTimeUnits-1, Clock)
 .
 
-mainSpawner(SecretaryList, Screen, Clock) ->
+helperSpawner(SecretaryList, Screen, TicketMachine, Clock) ->
   receive
     spawn ->
-      Helper = spawn(dziekanat, secondLineSpawner, [SecretaryList, Screen, Clock]),
-      Helper ! spawn
+      Helper = spawn(dziekanat, multiStudentsSpawner, [SecretaryList, Screen, TicketMachine, Clock]),
+      Clock ! {Helper, get_time}
   end.
 
-secondLineSpawner(SecretaryList, Screen, Clock) ->
+takie(DayInWeek,Day,Month,Hour,Month) -> studentPerTimeUnit() * week_day_factor(DayInWeek) * special_day_factor(Day,Month) * hour_factor(Hour) * month_factor(Month).
+
+multiStudentsSpawner(SecretaryList, Screen, TicketMachine, Clock) ->
   receive
-    spawn ->
-      {DayInWeek,_,_,Hour,Day,Month,_} = Time,
+    {DayInWeek,_,_,Hour,Day,Month,_} ->
       N = studentPerTimeUnit() * week_day_factor(DayInWeek) * special_day_factor(Day,Month) * hour_factor(Hour) * month_factor(Month),
+      NN = getN(N),
+     % io:fwrite("~B",[NN]),
+      spawnSpawners(NN,SecretaryList, Screen, TicketMachine, Clock)
   end.
+% dziekanat:main(100000).
+getN(0.0) -> 0;
+getN(N) when N >= 1 -> round(N);
+getN(N) when N < 1 ->
+  X = generateInteger(0,round(1/N)),
+ % io:fwrite("~B",[X]),
+  if X =:= 1 -> 1;
+     X =/= 1 -> 0
+  end
+.
 
-randomizeTimeout() -> timeUnit() / generateInteger(1,10).
+spawnSpawner(SecretaryList, Screen, TicketMachine, Clock) ->
+  Spawner = spawn(dziekanat, singleStudentSpawner, [SecretaryList, Screen, TicketMachine, Clock]),
+  Spawner ! spawn.
+spawnSpawners(0,_,_,_,_) -> void;
+spawnSpawners(N, SecretaryList, Screen, TicketMachine, Clock) ->
+  spawnSpawner(SecretaryList, Screen, TicketMachine, Clock),
+  spawnSpawners(N-1, SecretaryList, Screen, TicketMachine, Clock).
 
-spawner(SL,Scr) ->
+singleStudentSpawner(SecretaryList, Screen, TicketMachine, Clock) ->
   receive
-    {spawn} -> ;
+    spawn ->
+      %timer:sleep(randomizeTimeout()),
+      FieldOfStudy = generateFieldOfStudy(),
+      io:format(lists:concat(["Wszedl student kierunku: ", toString(FieldOfStudy), ". ~n"])),
+      Issue = generateIssue(),
+      Student = spawn(obsluga, student, [FieldOfStudy, Issue, Screen, SecretaryList, TicketMachine, Clock, -1]),
+      Student ! go
   end.
 
+generateIssue() -> general.
 
-
+randomizeTimeout() ->
+  round(timeUnit() / generateInteger(1,10)).
 
 addToList(L,S,informatyka) ->
   [E,A,I,IB] = L,
