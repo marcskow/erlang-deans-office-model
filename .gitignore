@@ -84,3 +84,8 @@ fabric.properties
 .nfs*
 /src/examples
 /src/examples/*
+
+
+priv/*.so
+priv/lib/*
+c_src/*.o

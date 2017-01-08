@@ -14,11 +14,13 @@ customTimerThread({DIW,S,M,H,D,Mo,Y},View) ->
       NDIW = countDayInWeek(D,ND,DIW),
       NMo = countMonth(Mo,ND),
       NY = countYear(Y,NMo),
-      show(S,NM,M,H,D,Mo,Y),
+      View!{clock,S,NM,H,D,Mo,Y},
+%%      printTimer(S,NM,M,H,D,Mo,Y),
+%%      show(S,NM,M,H,D,Mo,Y),
       % io:format("~B:~B:~B ~B-~B-~B ~n",[H,M,S,D,Mo,Y]),
-      customTimerThread({NDIW, NS, countMinute(NM), countHour(NH), countDay(ND), countMonth(NMo), NY});
-    {From, get_time} -> From ! {DIW,S,M,H,D,Mo,Y}, customTimerThread({DIW,S,M,H,D,Mo,Y});
-    {From, X, get_time} -> From ! {X,DIW,S,M,H,D,Mo,Y}, customTimerThread({DIW,S,M,H,D,Mo,Y})
+      customTimerThread({NDIW, NS, countMinute(NM), countHour(NH), countDay(ND), countMonth(NMo), NY},View);
+    {From, get_time} -> From ! {DIW,S,M,H,D,Mo,Y}, customTimerThread({DIW,S,M,H,D,Mo,Y},View);
+    {From, X, get_time} -> From ! {X,DIW,S,M,H,D,Mo,Y}, customTimerThread({DIW,S,M,H,D,Mo,Y},View)
 end.
 
 customTimer({DayInWeek,Second,Minute,Hour,Day,Month,Year}) ->
@@ -60,7 +62,7 @@ customTimer2(DIW,S,M,H,D,Mo,Y) ->
     NY)
 .
 show(_,M,M,_,_,_,_) -> void;
-show(S,M,_,H,D,Mo,Y) -> io:format("~B:~B:~B ~B-~B-~B ~n",[H,M,S,D,Mo,Y]).
+show(S,M,_,H,D,Mo,Y) -> io:format("duspko ~B:~B:~B ~B-~B-~B ~n",[H,M,S,D,Mo,Y]).
 
 nextDay(poniedzialek) -> wtorek;
 nextDay(wtorek) -> sroda;
