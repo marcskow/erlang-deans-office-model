@@ -7,7 +7,7 @@
 -import(deansView,[initView/0,viewThread/0,studentMessageThread/0]).
 -compile([export_all]).
 
-studentPerTimeUnit() -> 0.5.
+studentPerTimeUnit() -> 4.
 
 %% API
 %-export([]).

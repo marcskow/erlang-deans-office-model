@@ -316,11 +316,13 @@ goToDean(biomedyczna)->
 
 printDeanWelcome(FieldOfStudy,TicketNumber) ->
   printPrettyChar(22,60,70,8,$ ),
+  printPrettyChar(24,60,70,8,$ ),
   cecho:attron(?ceCOLOR_PAIR(3)),
   cecho:mvaddstr(22,60,io_lib:format("Witam psa z ~s z nr ~B",[FieldOfStudy,TicketNumber])),
   cecho:refresh().
 
 printDeanMessage(Type)->
+%%  printPrettyChar(22,60,70,8,$ ),
   printPrettyChar(24,60,70,8,$ ),
   cecho:attron(?ceCOLOR_PAIR(3)),
   cecho:mvaddstr(24,60,getDeanMessage(Type)),
