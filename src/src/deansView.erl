@@ -316,7 +316,7 @@ goToDean(biomedyczna)->
 
 printDeanWelcome(FieldOfStudy,TicketNumber) ->
   printPrettyChar(22,60,70,8,$ ),
-  printPrettyChar(24,60,70,8,$ ),
+%%  printPrettyChar(24,60,70,8,$ ),
   cecho:attron(?ceCOLOR_PAIR(3)),
   cecho:mvaddstr(22,60,io_lib:format("Witam psa z ~s z nr ~B",[FieldOfStudy,TicketNumber])),
   cecho:refresh().
@@ -335,8 +335,9 @@ getDeanMessage(dean_bad)->
 getDeanMessage(dean_ok)->
   "Dobra podpisze Ci to";
 getDeanMessage(againToSecretary)->
-  "Musisz jeszcze wrocic do Pani z dziakanatu".
-
+  "Musisz jeszcze wrocic do Pani z dziakanatu";
+getDeanMessage(_)->
+  "Spokojnie cos sie wymysli".
 printStudentMessage(FoS,Message,Number) ->
   printPrettyChar(30+Number,60,79,8,$ ),
   cecho:attron(?ceCOLOR_PAIR(3)),

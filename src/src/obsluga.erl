@@ -92,7 +92,7 @@ student(FieldOfStudy,Issue,Screen,SecretaryList,Dean,TicketMachine,Clock,Ticket,
       Secretary = getStudentSecretary(SecretaryList,FieldOfStudy),
       Secretary ! {self(), FieldOfStudy, Ticket, Issue},
       student(FieldOfStudy,Issue,Screen,SecretaryList,Dean,TicketMachine,Clock,Ticket,StudentMessage);
-    terminate ->       StudentMessage!{student_message,FieldOfStudy,done}
+    {terminate} ->       StudentMessage!{student_message,FieldOfStudy,done}
   end.
 
 getStudentSecretary(SecretaryList,FieldOfStudy) ->
