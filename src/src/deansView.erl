@@ -2,7 +2,8 @@
 %%%-------------------------------------------------------------------
 -module(deansView).
 -compile(export_all).
-
+-author('Marcin Skowron').
+-author('Michal Kaldus').
 -include("cecho.hrl").
 -define(WINODW_SIZE_X, 140).
 -define(WINODW_SIZE_Y, 50).

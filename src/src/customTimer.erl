@@ -3,6 +3,11 @@
 -compile([export_all]).
 
 -import(constants, [timeUnit/0]).
+-author('Marcin Skowron').
+-author('Michal Kaldus').
+
+
+
 
 customTimerThread({DIW,S,M,H,D,Mo,Y},View) ->
   receive

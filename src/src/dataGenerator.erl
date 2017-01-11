@@ -3,7 +3,8 @@
 -export([generateFieldOfStudy/0,toString/1,generate/1, generateInteger/2]).
 
 -import(obsluga,[student/1]).
-
+-author('Marcin Skowron').
+-author('Michal Kaldus').
 generateFieldOfStudy() ->
   N = generateInteger(0,3),
   FieldOfStudy = assignFieldOfStudy(N),

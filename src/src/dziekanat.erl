@@ -1,5 +1,6 @@
 -module(dziekanat).
-
+-author('Marcin Skowron').
+-author('Michal Kaldus').
 -import(dataGenerator, [generateFieldOfStudy/0,toString/1,generateInteger/2]).
 -import(obsluga,[getTicket/5,student/1,secretary/2,screen/5,dean/2]).
 -import(constants,[timeUnit/0]).
