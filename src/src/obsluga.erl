@@ -1,5 +1,6 @@
 -module(obsluga).
-
+-author('Marcin Skowron').
+-author('Michal Kaldus').
 %% API
 -export([getTicket/5, student/9, secretary/5,screen/4,getStudentSecretary/2, dean/3]).
 

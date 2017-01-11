@@ -1,5 +1,6 @@
 -module(constants).
-
+-author('Marcin Skowron').
+-author('Michal Kaldus').
 -compile([export_all]).
 
 second() -> 1000.
