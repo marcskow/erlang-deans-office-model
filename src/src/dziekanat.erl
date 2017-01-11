@@ -13,13 +13,13 @@ studentPerTimeUnit() -> 4.
 %-export([]).
 %secretary(FoS, Num) ->
 %secretary(FoS, Scr, Num) ->
-main(NumberOfTimeUnits) ->
+main(NumberOfTimeUnits, DayInWeek, Second, Minute, Hour, Day, Month, Year) ->
   random:seed(erlang:now()),
   deansView:initView(),
 %%  timer:sleep(1000),
   View = spawn(deansView,viewThread,[]),
   spawn(deansView,input_reader,[]),
-  Clock = spawn(customTimer, customTimerThread,[{poniedzialek,0,0,15,5,1,2016},View]),
+  Clock = spawn(customTimer, customTimerThread,[{DayInWeek,Second,Minute,Hour,Day,Month,Year},View]),
   TicketMachine = spawn(obsluga, getTicket, [1,1,1,1,View]),
   Screen = spawn(obsluga,screen,[1,1,1,1]),
   Dean = spawn(obsluga,dean,[Screen,Clock,View]),
@@ -49,8 +49,6 @@ helperSpawner(SecretaryList, Screen, Dean, TicketMachine, Clock,StudentMessage) 
       Helper = spawn(dziekanat, multiStudentsSpawner, [SecretaryList, Screen, Dean, TicketMachine, Clock,StudentMessage]),
       Clock ! {Helper, get_time}
   end.
-
-takie(DayInWeek,Day,Month,Hour,Month) -> studentPerTimeUnit() * week_day_factor(DayInWeek) * special_day_factor(Day,Month) * hour_factor(Hour) * month_factor(Month).
 
 multiStudentsSpawner(SecretaryList, Screen, Dean, TicketMachine, Clock,StudentMessage) ->
   receive
@@ -123,9 +121,10 @@ getSecretary(automatyka,[_,A,_,_]) -> A.
 % DIW H D Mo Y
 week_day_factor(sobota) -> 0.0;
 week_day_factor(niedziela) -> 0.0;
-week_day_factor(czwartek) -> 0.1;
-week_day_factor(_) -> 1.
+week_day_factor(czwartek) -> 0.0;
+week_day_factor(_) -> 0.25.
 
+special_day_factor(18,1) -> 0.7;
 special_day_factor(24,12) -> 0.0;
 special_day_factor(25,12) -> 0.0;
 special_day_factor(26,12) -> 0.0;
@@ -134,25 +133,25 @@ special_day_factor(28,12) -> 0.0;
 special_day_factor(29,12) -> 0.0;
 special_day_factor(30,12) -> 0.0;
 special_day_factor(1,1) -> 0.0;
-special_day_factor(2,1) -> 0.3;
-special_day_factor(_,_) -> 1.
+special_day_factor(2,1) -> 0.05;
+special_day_factor(_,_) -> 0.25.
 
-hour_factor(7) -> 0.1;
-hour_factor(8) -> 0.1;
-hour_factor(9) -> 0.2;
-hour_factor(10) -> 0.5;
-hour_factor(11) -> 1;
-hour_factor(12) -> 1;
-hour_factor(13) -> 0.7;
-hour_factor(14) -> 0.3;
-hour_factor(15) -> 0.1;
-hour_factor(16) -> 0.1;
+hour_factor(7) -> 0.03;
+hour_factor(8) -> 0.07;
+hour_factor(9) -> 0.10;
+hour_factor(10) -> 0.15;
+hour_factor(11) -> 0.25;
+hour_factor(12) -> 0.25;
+hour_factor(13) -> 0.15;
+hour_factor(14) -> 0.10;
+hour_factor(15) -> 0.07;
+hour_factor(16) -> 0.01;
 hour_factor(_) -> 0.
 
 % Kiedy wydaja prace dyplomowe ?
-month_factor(3) -> 2;
-month_factor(2) -> 0.4;
-month_factor(7) -> 0.1;
-month_factor(8) -> 0.1;
-month_factor(9) -> 2;
-month_factor(_) -> 1.
+month_factor(3) -> 1;
+month_factor(2) -> 0.2;
+month_factor(7) -> 0.05;
+month_factor(8) -> 0.05;
+month_factor(9) -> 1;
+month_factor(_) -> 0.5.

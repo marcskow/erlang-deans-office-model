@@ -6,14 +6,15 @@
 -import(dataGenerator, [generateStudent/0,toString/1,generateInteger/2,generateFieldOfStudy/0]).
 -import(dziekanat,[getSecretary/2]).
 
-waitIntoQueueTimeout() -> timer:sleep(10 * constants:timeUnit()).
-generalIssueTimeout() -> timer:sleep(10 * constants:timeUnit()).
-studentCertificateIssueTimeout() -> timer:sleep(10 * constants:timeUnit()).
-petitionIssueTimeout() -> timer:sleep(10 * constants:timeUnit()).
-socialIssueTimeout() -> timer:sleep(10 * constants:timeUnit()).
-degreeIssueTimeout() -> timer:sleep(10 * constants:timeUnit()).
-handleStudentTimeout() -> timer:sleep(10 * constants:timeUnit()).
-thinkABitTimeout() -> timer:sleep(constants:timeUnit()).
+waitIntoQueueTimeout() -> timer:sleep(constants:timeUnit() * 120).
+generalIssueTimeout() -> timer:sleep(constants:timeUnit() * 240).
+studentCertificateIssueTimeout() -> timer:sleep(constants:timeUnit() * 120).
+petitionIssueTimeout() -> timer:sleep(constants:timeUnit() * 60).
+socialIssueTimeout() -> timer:sleep(constants:timeUnit() * 140).
+degreeIssueTimeout() -> timer:sleep(constants:timeUnit() * 60).
+handleStudentTimeout() -> timer:sleep(constants:timeUnit() * 240).
+coffeeTimeout() -> timer:sleep(constants:timeUnit() * 240).
+thinkABitTimeout() -> timer:sleep(constants:timeUnit() * 120).
 
 printHandleStudentMessage(FoS, Num,View) ->
   View!{actual_ticket,FoS,Num}.
@@ -159,6 +160,7 @@ secretary(FieldOfStudy, Screen, Clock, NumberToHandle,View) ->
         if X =:= break_time ->
           From ! break_time,
           View ! {secretary_break_time,FieldOfStudy},
+          coffeeTimeout(),
           secretary(FieldOfStudy,Screen, Clock, NumberToHandle,View);
           X =:= ok ->
             if StudentNumber =/= NumberToHandle ->
@@ -190,12 +192,14 @@ handleStudent(From, Screen, FieldOfStudy,TicketNumber,View,certificate) ->
   Screen ! {FieldOfStudy, TicketNumber + 1},
   TicketNumber + 1;
 handleStudent(From, _, FieldOfStudy,TicketNumber,View,degree) ->
-  View!{go_to_dean,FieldOfStudy},
+  degreeIssueTimeout(),
+  View!{go_to_dean,FieldOfStudy,TicketNumber + 1},
 %%  printMessage("Musi sie pan udac do dziekana. ~n",FieldOfStudy,TicketNumber),
   From ! to_dean,
   TicketNumber + 1;
 handleStudent(From, _, FieldOfStudy,TicketNumber,View,petition) ->
-  View!{go_to_dean,FieldOfStudy},
+  petitionIssueTimeout(),
+  View!{go_to_dean,FieldOfStudy,TicketNumber + 1},
 %%  printMessage("Musi sie pan udac do dziekana. ~n",FieldOfStudy,TicketNumber),
   From!to_dean,
   TicketNumber + 1.
@@ -204,19 +208,21 @@ dean(Screen, Clock,View) ->
   receive
     {From, TicketNumber, FieldOfStudy, petition} ->
       View!{dean_welcome,TicketNumber,FieldOfStudy},
+      petitionIssueTimeout(),
       handlePetition(Screen, From, FieldOfStudy, TicketNumber, generateInteger(0,10),View),
       dean(Screen,Clock,View);
     {From, TicketNumber, FieldOfStudy, degree} ->
       View!{dean_welcome,TicketNumber,FieldOfStudy},
+      degreeIssueTimeout(),
       handlePetition(Screen, From, FieldOfStudy, TicketNumber, generateInteger(0,10),View),
       dean(Screen,Clock,View)
   end.
 
-handlePetition(Screen, From, FieldOfStudy, TicketNumber, Random,View) when Random =:= 0 ->
+handlePetition(Screen, From, FieldOfStudy, TicketNumber, Random,View) when Random >= 0, Random =< 1 ->
   View!{dean_message,dean_reallybad,FieldOfStudy},
   From ! {dean_reallybad, "Zachowal sie Pan karygodnie, prosze odejsc ! ~n"},
   Screen ! {FieldOfStudy, TicketNumber + 1};
-handlePetition(Screen, From, FieldOfStudy, TicketNumber, Random,View) when Random >= 1, Random =< 4 ->
+handlePetition(Screen, From, FieldOfStudy, TicketNumber, Random,View) when Random >= 2, Random =< 4 ->
   View!{dean_message,dean_bad},FieldOfStudy,
   From ! {dean_bad, "Nie moge Panu pomoc w tej sprawie ~n"},
   Screen ! {FieldOfStudy, TicketNumber + 1};

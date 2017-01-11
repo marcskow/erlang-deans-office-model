@@ -71,7 +71,8 @@ viewThread(NumberOfStudentsMessage)->
     {secretary_break_time,FoS}->
       printBreak(FoS),
       viewThread(NumberOfStudentsMessage);
-    {go_to_dean,FoS}->
+    {go_to_dean,FoS,Number}->
+      printNextStudent(FoS,Number),
       goToDean(FoS),
       viewThread(NumberOfStudentsMessage);
     {dean_welcome,TicketNumber,FieldOfStudy}->
@@ -356,7 +357,7 @@ getStudentMessage(dean_bad) ->
 getStudentMessage(dean_reallybad) ->
   "Pan dziekan jest zdenerwowany";
 getStudentMessage(againToSecretary) ->
-  "Kurcze musze jeszcze razd od sekretariatu";
+  "Kurcze musze jeszcze raz do sekretariatu";
 getStudentMessage(done) ->
   "Gotowe wracam do domu";
 getStudentMessage(_)->
