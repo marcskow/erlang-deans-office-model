@@ -254,19 +254,19 @@ printNextStudent(biomedyczna,Number)->
 
 printGoodByeMessage(elektrotechnika,Number)->
   cecho:attron(?ceCOLOR_PAIR(3)),
-  cecho:mvaddstr(13,1,io_lib:format("Zegnam psa z numerem ~B",[Number])),
+  cecho:mvaddstr(13,1,io_lib:format("Zegnam pana z numerem ~B",[Number])),
   cecho:refresh();
 printGoodByeMessage(automatyka,Number)->
     cecho:attron(?ceCOLOR_PAIR(3)),
-  cecho:mvaddstr(13,44,io_lib:format("Zegnam psa z numerem ~B",[Number])),
+  cecho:mvaddstr(13,44,io_lib:format("Zegnam pana z numerem ~B",[Number])),
   cecho:refresh();
 printGoodByeMessage(informatyka,Number)->
   cecho:attron(?ceCOLOR_PAIR(3)),
-  cecho:mvaddstr(13,77,io_lib:format("Zegnam psa z numerem ~B",[Number])),
+  cecho:mvaddstr(13,77,io_lib:format("Zegnam pana z numerem ~B",[Number])),
   cecho:refresh();
 printGoodByeMessage(biomedyczna,Number)->
   cecho:attron(?ceCOLOR_PAIR(3)),
-  cecho:mvaddstr(13,114,io_lib:format("Zegnam psa z numerem ~B",[Number])),
+  cecho:mvaddstr(13,114,io_lib:format("Zegnam pana z numerem ~B",[Number])),
   cecho:refresh().
 
 
@@ -295,22 +295,22 @@ printBreak(biomedyczna)->
 goToDean(elektrotechnika)->
   printPrettyChar(13,1,30,8,$ ),
   cecho:attron(?ceCOLOR_PAIR(3)),
-  cecho:mvaddstr(13,1,"Do dziekana szmato"),
+  cecho:mvaddstr(13,1,"Do dziekana "),
   cecho:refresh();
 goToDean(automatyka)->
   printPrettyChar(13,44,30,8,$ ),
   cecho:attron(?ceCOLOR_PAIR(3)),
-  cecho:mvaddstr(13,44,"Do dziekana szmato"),
+  cecho:mvaddstr(13,44,"Do dziekana "),
   cecho:refresh();
 goToDean(informatyka)->
   printPrettyChar(13,77,30,8,$ ),
   cecho:attron(?ceCOLOR_PAIR(3)),
-  cecho:mvaddstr(13,77,"Do dziekana szmato"),
+  cecho:mvaddstr(13,77,"Do dziekana "),
   cecho:refresh();
 goToDean(biomedyczna)->
   printPrettyChar(13,114,24,8,$ ),
   cecho:attron(?ceCOLOR_PAIR(3)),
-  cecho:mvaddstr(13,114,"Do dziekana szmato"),
+  cecho:mvaddstr(13,114,"Do dziekana "),
   cecho:refresh().
 
 
@@ -318,7 +318,7 @@ printDeanWelcome(FieldOfStudy,TicketNumber) ->
   printPrettyChar(22,60,70,8,$ ),
 %%  printPrettyChar(24,60,70,8,$ ),
   cecho:attron(?ceCOLOR_PAIR(3)),
-  cecho:mvaddstr(22,60,io_lib:format("Witam psa z ~s z nr ~B",[FieldOfStudy,TicketNumber])),
+  cecho:mvaddstr(22,60,io_lib:format("Witam pana z ~s z nr ~B",[FieldOfStudy,TicketNumber])),
   cecho:refresh().
 
 printDeanMessage(Type)->
@@ -329,7 +329,7 @@ printDeanMessage(Type)->
   cecho:refresh().
 
 getDeanMessage(dean_reallybad)->
-  "Jak ty mowisz to dziekana dziwko";
+  "Jak ty mowisz to dziekana";
 getDeanMessage(dean_bad)->
   "Nie pomoge Ci w tej sprawie";
 getDeanMessage(dean_ok)->
