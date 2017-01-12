@@ -10,6 +10,8 @@
 \usepackage[section]{placeins}
 \usepackage{hyperref}
 \usepackage{listings}
+\usepackage{pdfpages}
+
 %% Sets page size and margins
 \usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
 
@@ -29,7 +31,7 @@
 \begin{titlepage}
     \centering
     \vfill
-    {\bfseries\Large
+    {\bfseries\LARGE
         Programowanie współbieżne i rozproszone\\
 
     }    
@@ -37,10 +39,15 @@
     \includegraphics[width=4cm]{agh.jpg} 
     \vfill
     
-     {\bfseries\Large
-     	Symulacja dziekanatu \\ 
+     {\bfseries\large
+     	{\Huge Symulacja dziekanatu} \\ 
      Prowadzący: dr inż. Jacek Piwowarczyk \\
-     Autorzy:Marcin Skowron i Michał Kałduś\\
+     Autorzy: Marcin Skowron i Michał Kałduś\\
+     Wydział: Elektrotechniki, Automatyki, Informatyki i Inżynierii Biomedycznej\\
+     Kierunek: Informatyka\\
+     Grupa: 3\\
+     Język wykonania: Erlang
+     
     }  
     \vfill
 \end{titlepage}
@@ -86,7 +93,12 @@ Kolejnym elementem programu jest to że każdy student po obsłużeni oraz w tra
 \end{itemize}
 
 \section{Struktura logiczna}
-Obrazki UML %%TODO
+	Poniżej przedstawiamy uproszczony schemat działania aplikacji.
+	Każda z linii życia symbolizuje proces lub jak w przypadku \textit{SecretaryList} czy \textit{Student} grupę procesów, które funkcjonują na takich samych bądź podobnych zasadach.
+	
+
+	
+\includepdf[pages={1}]{diagram.pdf}
 
 \section{Specyfikacja projektu}
 	W celu zrealizowania warstwy widoku naszego projektu posłużyliśmy się biblioteką \nobreak \textbf{cecho} ze strony \url{https://github.com/mazenharake/cecho}, która adaptuje bibliotekę ncurses z języka C. 
@@ -102,7 +114,7 @@ Obrazki UML %%TODO
 	./run.escript
 	\end{lstlisting}
 	
-	\newpage
+	
 	\section{Przykłady}
 	
 	\begin{figure}[!htb]
