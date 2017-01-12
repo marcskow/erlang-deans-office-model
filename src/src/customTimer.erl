@@ -19,7 +19,7 @@ customTimerThread({DIW,S,M,H,D,Mo,Y},View) ->
       NDIW = countDayInWeek(D,ND,DIW),
       NMo = countMonth(Mo,ND),
       NY = countYear(Y,NMo),
-      View!{clock,S,NM,H,D,Mo,Y},
+      View!{clock,S,M,H,D,Mo,Y},
 %%      printTimer(S,NM,M,H,D,Mo,Y),
 %%      show(S,NM,M,H,D,Mo,Y),
       % io:format("~B:~B:~B ~B-~B-~B ~n",[H,M,S,D,Mo,Y]),
