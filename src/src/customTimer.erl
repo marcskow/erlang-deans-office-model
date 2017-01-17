@@ -67,7 +67,7 @@ customTimer2(DIW,S,M,H,D,Mo,Y) ->
     NY)
 .
 show(_,M,M,_,_,_,_) -> void;
-show(S,M,_,H,D,Mo,Y) -> io:format("duspko ~B:~B:~B ~B-~B-~B ~n",[H,M,S,D,Mo,Y]).
+show(S,M,_,H,D,Mo,Y) -> io:format(" ~B:~B:~B ~B-~B-~B ~n",[H,M,S,D,Mo,Y]).
 
 nextDay(poniedzialek) -> wtorek;
 nextDay(wtorek) -> sroda;

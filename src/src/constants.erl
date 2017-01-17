@@ -12,4 +12,4 @@ month() -> day() * 30.
 
 % Base is second (minute per second).
 % Then 10x faster is second() / 10 so timeUnit is 10 minutes per seconds
-timeUnit() -> round(second()/1000).
+timeUnit() -> round(second()/100).
